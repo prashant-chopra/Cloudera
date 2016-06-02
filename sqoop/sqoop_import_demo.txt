@@ -1,0 +1,61 @@
+#CDH5.5.0
+#This document will cover SQOOP import options
+#Commands to import data from mysql database to HDFS and HIVE
+
+##To list databases in a mysql connection
+
+sqoop list-databases \
+--connect "jdbc:mysql://quickstart.cloudera:3306" \
+--username retail_dba \
+--password cloudera
+
+##To list all tables in specific mysql database
+
+sqoop list-tables \
+--connect "jdbc:mysql://quickstart.cloudera.com:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+
+NOTE : When working with specific database, --connect needs to have database name
+
+#To evaluate database tables or data
+
+sqoop eval \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--query "select count(*) from departments"
+
+NOTE : EVAL can be used to retrieve information from database without explicitly
+       connecting to the database. Alternatively, this can be used as a tool to
+       cross check import is successful or not. For Eg : source and destination
+       have same number of records after import
+
+#IMPORTING all tables of a database to HDFS
+
+sqoop import-all-tables \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--warehouse-dir /user/cloudera/sqoop_import/
+
+When importing all the tables of a database use parameter
+--warehouse-dir which specifies the parent directory under which all the tables
+will be imported. Every table will have its own directory with files containing
+the actual table data
+
+#IMPORTING all tables of a database to HIVE
+
+--create a database in hive, as this will be used to import all tables
+
+sqoop import-all-tables \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--hive-import \
+--hive-overwrite \
+--create-hive-table \
+--hive-database sqoop_import \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--outdir java_files
