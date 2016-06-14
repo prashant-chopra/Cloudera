@@ -1,0 +1,67 @@
+Sqoop Import Delimiters
+-----------------------
+
+1) Check the output of departments table in hdfs
+
+$> hdfs dfs -cat /user/cloudera/sqoop_import/departments/part*
+
+#You will notice by default 
+##fields are terminated by "," and
+##lines are terminated by new line character
+
+--enclosed-by this parameter will enclosed values of each field by the specified character.
+--fields-terminated-by will specify the the character by which fields will be terminated
+--lines-terminated-by will specify the character by which lines will be terminated
+
+sqoop import \
+--connect "jdbc:mysql://quickstart.clouders:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--table departments \
+--target-dir /user/cloudera/sqoop_import/departments_enclosedby \
+--enclosed-by \"
+--fields-terminated-by \| \
+--lines-terminated-by \:
+
+check the data in newly imported dir
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Create table in hive
+
+run import to hive (as sqoop) in append mode as directory already exists
+
+sqoop import \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--table departments_test
+--target-dir /user/hive/warehouse/departments_test \
+--append
+
+When this import finishes check the data in the hive table, it will be null
+
+==>Note here we have not specified hive-import, thus though we are import data into hive table
+==>it will use default delimiters of sqoop and not of hive.
+
+THUS IT IS IMPORTANT TO USE fields-terminated-by AND lines-terminated-by WHEN PERFORMING Sqoop
+IMPORT DIRECTLY INTO HIVE TABLE DIR WITHOUT THE USE OF hive-import !!!!! TRY THIS?????????????
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SCENARIO
+========
+When there are nulls in MYSQL table which is being imported (HDFS or HIVE)... use 
+--null-string for character values
+--null-non-string for numeric values
+
+to specify alternate values for nulls
+
+sqoop import \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--table departments_test \
+--hive-import \
+--hive-overwrite \
+--hive-table deparments_test
+--null-string nvl \
+--null-non-string -1
+
