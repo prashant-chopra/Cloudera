@@ -29,3 +29,88 @@ where AGENT1 is the name of the flume agent, which will have 3 set of parameters
 -sources
 -sinks
 -channels
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Running Flume Job
+#Telnet to logger
+-----------------
+
+1) Create dir where flume configuratoin file will be stored
+
+at home
+$> mkdir/flume/conf/example.conf
+
+2) Copy sample configuration to above file and save
+
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat			#This will start a webserver
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444			#will be connected to this port
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+3)Start the agent
+
+flume-ng agent --name a1 \
+--conf /home/cloudera/flume/conf \
+--conf-file /home/cloudera/flume/conf/exmaple.conf
+
+Once agent is started, go to telnet and whatever is typed here will be logged by agent.
+
+$> telnet localhost 44444
+
+***************************************************************************************
+******************************UNDERSTANDING SINKS IN HDFS******************************
+***************************************************************************************
+
+1) Remove dir /user/cloudera/flume if exists
+
+2) modify example.conf to use HDFS as sink
+
+-update sink type to HDFS
+-introduce hdfs.path and hdfs.filePrefix to conf file
+
+SAVE AND EXIT
+
+3) Start the agent and on telnet start dumping text
+
+4) files will created at hdfs.path as defined in configuration file.
+
+File created here will be a sequence file so if we try to cat the file, it will be garbled
+
+5) Now we will introduce and understand few more parameters
+--hdfs.fileType = DataStream
+--hdfs.rollInterval = 60
+
+6) remove dir /user/cloudera/flume and start agent again and start dumping text on telnet
+
+review the files created.
+
+***************************************************************************************
+*****************************INGEST REAL TIME DATA IN HDFS*****************************
+***************************************************************************************
+Here we will be making certain modifications to conf file provided in example folder
+-We will be changing sink from solr to HDFS
+
+We can update the logs provided in example configuration file by using start_logs
+and stop the logs command is stop_logs
