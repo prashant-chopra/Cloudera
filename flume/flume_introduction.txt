@@ -1,0 +1,31 @@
+FLUME INTRODUCTION
+------------------
+
+Flume is generally used to ingest streaming data into HDFS. Eg: Web Logs
+
+#Architecture
+
+On the source system there needs to be an flume agent
+which will pull the web logs
+
+This will channel the data from agent to flume agent
+on target system gateway node which will load data into HDFS.
+
+Web Server---->Source---->Channel---->Sink---->HDFS
+
+There are different architecture:
+1) Multiple agents architecture
+2) Consolidation architecture
+3) Multiplexing architecture
+
+==>To check the version of flume on VM use
+
+$>flume-ng version
+
+To check sample flume agent configuration, check file flume.conf
+at /opt/examples/flume/conf
+
+where AGENT1 is the name of the flume agent, which will have 3 set of parameters
+-sources
+-sinks
+-channels
