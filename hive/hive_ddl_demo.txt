@@ -1,4 +1,4 @@
-HIVE TUTORIAL
+gitHIVE TUTORIAL
 =============
 
 # Difference with RDBMS
@@ -40,3 +40,22 @@ Physical Data Modeling in HIVE
 
 Eg : Too much partitioning means many small files, which is not good for hadoop
 Too little partitioning means ETL/Reporting can go slow.
+
+EXTRACT AND LOAD - HIVE
+=======================
+
+Data can be coming from different sources like
+-RDBMS (Oracle etc)
+-Closed (Mainframe etc)
+-External (XML, JSON etc)
+
+Strategies for extract and load
+-Push (need to use hive or write custom MR)
+-Pull (can use sqoop)
+-Filter as much as possible and as early as possible
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+SQOOP can be used to load data from RDBMS
+HIVE can be used to load data already extracted to HDFS in form of flat files
+MR job can be used to extend capabilities to load process
+++++++++++++++++++++++++++++++++++++++++++++++++++++
