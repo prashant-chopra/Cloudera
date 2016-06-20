@@ -1,0 +1,42 @@
+HIVE TUTORIAL
+=============
+
+# Difference with RDBMS
+1) No support for real time indexes
+2) No Packages or procedures or functions
+3) No Triggers
+4) Partitioning available but NO range partitioning
+   - In terms of Oracle there are 3 types of partitioning techniques:
+     LIST - This is partitioning in hive
+     HASH - This is bucketing in hive
+     RANGE- Not available with hive
+5) Limited data types (numeric, string, binary etc.)
+
+HIVE DDL
+========
+
+create database if not exists retail_ods;
+create database of not exists retail_edw;
+
+Types of tables:
+1) Managed table - When drop a managed table, HDFS directory is also deleted.
+2) External table - When drop a external table, only metadata from hive
+                    metastore is deleted. HDFS dir and files still remain.
+
+Why use EXTERNAL TABLE:
+If a table data is being used by multiple tools, if its a managed table and
+table is dropped, all the tools are affected as data is lost. Thus use external
+table in such scenarios.
+
+Physical Data Modeling in HIVE
+==============================
+1) Take care of the file format in which data needs to be stored
+2) Convert data types to as supported in hive
+3) Determine delimiters (field and line)
+4) Determine value for NULL values
+5) Handle data redundancy
+6) Determine Partitioning/Bucketing strategy
+7) Too much partitioning vs. too little partitioning
+
+Eg : Too much partitioning means many small files, which is not good for hadoop
+Too little partitioning means ETL/Reporting can go slow.
