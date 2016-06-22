@@ -1,4 +1,4 @@
-gitHIVE TUTORIAL
+HIVE TUTORIAL
 =============
 
 # Difference with RDBMS
@@ -59,3 +59,62 @@ SQOOP can be used to load data from RDBMS
 HIVE can be used to load data already extracted to HDFS in form of flat files
 MR job can be used to extend capabilities to load process
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CREATE TABLE
+============
+
+#MANAGED TABLE
+
+create table deck_of_cards
+(
+color string,
+suit string,
+pip string
+)
+row format delimited
+fields terminated by '|'
+lines terminated by '\n';
+
+NOTE:
+-Above command with create a table in current database in USE.
+-An empty table directory will be created in current database dir in hive home.
+-Row format defines if file is DELIMITED or SerDe
+
+To load data into this table, use LOAD command as follows:
+
+load data local inpath '/home/cloudera/demo/data/deckofcards.txt'
+into table deck_of_cards;
+
+NOTE:
+Above command will actually move deckofcards.txt from local file location
+as specified to table directory in HIVE.
+
+IMPORTANT:
+If there is a mismatch in fields terminated by character or lines terminated by
+character between table definition and actual file, unexpected data will be
+loaded
+
+To correct that, alter table command can be used as this would require changing
+serde paramter
+
+alter table deck_of_cards
+set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('field.delim'='|');
+
+#EXTERNAL TABLE
+
+create external table deck_of_cards_external
+(
+color string,
+suit string,
+pip string
+)
+row format delimited
+fields terminated by '|'
+location '/user/hive/warehouse/sqoop_import.db/deck_of_cards';
+
+NOTE:
+As above table is external table referring to same location in HDFS
+as MANAGED TABLE deck_of_cards, if this MANAGED table gets dropped, data will
+also be removed from HDFS location. Next when you query EXTERNAL table, it will
+NOT throw an error, query will run successfully with no result.
