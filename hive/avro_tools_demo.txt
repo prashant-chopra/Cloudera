@@ -1,0 +1,51 @@
+Generating AVRO Schema from AVRO datafile using AVRO TOOLS
+==========================================================
+
+1) Import all tables from retail_db to HIVE database warehouse location
+   for retail_avro database
+
+Create a folder on local FS as avro, and execute below command from inside
+this dir as this command will create some java files and avro schema file
+at the location from it is executed.
+
+sqoop import-all-tables \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username retail_dba \
+--password cloudera \
+--as-avrodatafile \
+--warehouse-dir /user/hive/warehouse/retail_avro.db/
+
+NOTE: As we are not doing HIVE import but just dumping files onto hive
+      warehouse location, there won't be any corresponding tables in
+      hive database.
+
+2) Once import is complete move departments avro file to local FS
+We will use avro file in departments directory to extract schema information
+
+hdfs dfs -get /user/hive/warehouse/retail_avro.db/departments .
+
+Once the dir is copied, if you try to view the contents of the file it
+will be garbled.
+
+DATA IN AVRO IS PRESENTED IN JSON FORMAT
+
+AVRO TOOLS
+==========
+
+1) To extract schema information from a avro file
+
+avro-tools getmeta departments.avro
+avro-tools getschema departments.avro
+
+2) To convert into JSON and save in another file
+
+avro-tools tojson departments.avro > departments.json
+
+3) To convert JSON file into avro
+
+avro-tools fromjson departments.avro --schema-file departments.avsc
+
+NOTE: When converting to AVRO format --schema-file parameter is mandatory
+      else it wont know the format of the data.
+
+NOT SURE IF TOTEXT/FROMTEXT WORKS
