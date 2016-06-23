@@ -1,0 +1,32 @@
+CREATE HIVE TABLE BASED ON AVRO DATAFILE
+========================================
+
+To create hive table on an existing AVRO datafile, it is important to
+provide :
+1) row format SreDe as AVRO
+2) stored as inputformat and outputformat
+3) schema literal or URL
+4) location of hdfs file in hive warehouse location
+   or use LOAD INPATH on local FS
+
+#IN HIVE
+--------
+create external table departments
+row format serde 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+stored as
+inputformat 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+outputformat 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+location 'hdfs:/user/hive/warehouse/retail_avro.db/departments'
+tblproperties ('avro.schema.url'='file:///home/cloudera/avro/departments.avsc');
+
+#IN IMPALA
+----------
+create external table categories
+stored as AVRO
+location 'hdfs:/user/hive/warehouse/retail_avro.db/categories'
+tblproperties ('avro.schema.url'='file:///home/cloudera/avro/categories.avsc');
+
+NOTE: In case of creating a table based on avro file in IMPALA, we do not
+specify "row format" and "inputformat"/"outputformat" parameters
+
+Rather only "stored as avro" is used.
