@@ -1,0 +1,87 @@
+HIVE PARTITION TABLES
+=====================
+
+In this section, we will be working on AVRO file format to create HIVE partitioned tables.
+
+For this example we will work on ORDERS table:
+When sqoop import was done on this table as avro format, it converts date to unix time format (which is bigint)
+
+SELECT	order_staus,
+		count(1)
+FROM	orders
+WHERE	from_unixtime(cast(substr(order_date,1,10) as int)) LIKE '2014-01%'
+ORDER BY order_status;
+
+NOTE: Update avro schema file to conform with partition definition
+
+1) create a new avcs file from avro data file
+
+2) edit this avsc file to conform with partition definition as follows :
+
+-update name to orders_part_avro
+-update doc accordingly
+
+-we will specify column names as part of create table command, thus from avsc file
+ remove columnName and sqlType parameters
+
+-update tableName as orders_part_avro
+
+WE SHOULD NOT SPECIFY PARTITION COLUMN IN SCHEMA FILE
+save and exit
+
+3) put this avsc file to an HDFS location or can be used locally.
+
+4) Create table partitioned on month in this scenario
+
+create table orders_part_avro
+(
+order_id int,
+order_date bignit,
+order_customer_id int,
+order_status string
+)
+partitioned by (order_month string)
+stored as avro
+location '/user/hive/warehouse/retail_avro.db/orders_part_avro'
+tblproperties ('avro.schema.file'='file:///home/cloudera/avro/orders_part_avro.avsc');
+
+select * from orders_part_avro;
+
+There won't be any data, as location is just a directory at the moment
+
+5) Create partition
+
+alter table orders_part_avro add partition (order_month='2014-01');
+
+Now, at above location there would be a dir as "order_month='2014-01'"
+
+6) Load data to partition
+
+insert into table orders_part_avro partition (order_month='2014-01')
+select * from orders where from_unixtime(cast(substr(order_date,1,10) as int)) LIKE '2014-01%';
+
+ITS VERY IMPORTANT TO PROVIDE PARTITION IN INSERT WHERE DATA NEEDS TO RESIDE
+
+All the partitions can be created like this
+
+THIS IS STATIC PARTITION CREATION, where in we are required to create partitions and then load data.
+
+#DYNAMIC Partitions
+===================
+
+-Here is dynamic partitions we will not be altering the table to create partitions
+-Need to explicitly select columns along with the partitioning column (properly derived)
+
+-drop and recreate above table 
+
+insert 	into table orders_part_avro partition (order_month)
+select 	order_id, orders_date, order_customer_id, order_status, 
+		substr(from_unixtime(cast(substr(order_date,1,10) as int)),1,7) order_month
+from 	orders;
+
++++++++++++++++++++++
+NOTE: To insert into synamic partitions appropriate parameters need to be set.
+hive.exec.dynamic.partition.mode=nonstrict;
+
+By default this parameter is strict which means there needs to be atleast 1 partition before creating additional partitions.
++++++++++++++++++++++
