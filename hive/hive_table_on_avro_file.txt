@@ -19,8 +19,8 @@ outputformat 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 location 'hdfs:/user/hive/warehouse/retail_avro.db/departments'
 tblproperties ('avro.schema.url'='file:///home/cloudera/avro/departments.avsc');
 
-#IN IMPALA
-----------
+#IN HIVE/IMPALA
+---------------
 create external table categories
 stored as AVRO
 location 'hdfs:/user/hive/warehouse/retail_avro.db/categories'
