@@ -38,10 +38,10 @@ Running Flume Job
 #Telnet to logger
 -----------------
 
-1) Create dir where flume configuratoin file will be stored
+1) Create dir where flume configuration file will be stored
 
 at home
-$> mkdir/flume/conf/example.conf
+$> mkdir /flume/conf/example.conf
 
 2) Copy sample configuration to above file and save
 
@@ -53,9 +53,9 @@ a1.sinks = k1
 a1.channels = c1
 
 # Describe/configure the source
-a1.sources.r1.type = netcat			#This will start a webserver
+a1.sources.r1.type = netcat			# This will start a webserver
 a1.sources.r1.bind = localhost
-a1.sources.r1.port = 44444			#will be connected to this port
+a1.sources.r1.port = 44444			# will be connected to this port
 
 # Describe the sink
 a1.sinks.k1.type = logger
@@ -73,7 +73,7 @@ a1.sinks.k1.channel = c1
 
 flume-ng agent --name a1 \
 --conf /home/cloudera/flume/conf \
---conf-file /home/cloudera/flume/conf/exmaple.conf
+--conf-file /home/cloudera/flume/conf/example.conf
 
 Once agent is started, go to telnet and whatever is typed here will be logged by agent.
 
