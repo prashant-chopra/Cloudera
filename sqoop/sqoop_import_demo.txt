@@ -58,7 +58,8 @@ the actual table data
 
 #This will create new directory called sqoop_import.db as hive home
 #At hive home there willl be 2 types of directories :
-# 1. Without .db extension : These will be one directory for each table holding table data in files.
+# 1. Without .db extension : These will be one directory for each table holding
+     table data in files.
 # 2. With    .db extension : These will be database directories as hive home.
 
 #To run HDFS command from inside HIVE, use "dfs <command>"
@@ -75,7 +76,8 @@ sqoop import-all-tables \
 --compression-codec org.apache.hadoop.io.compress.SnappyCodec \
 --outdir java_files
 
-#In above scenario compare oder_items table earlier created in HDFS import with one HIVE IMPORT
+#In above scenario compare oder_items table earlier created in HDFS import with
+ one HIVE IMPORT
 
 *************************************************************
 ****************** IMPORTING SINGLE TABLE *******************
@@ -91,16 +93,22 @@ sqoop import \
 --target-dir /user/cloudera/departments
 
 When importing single table of a database use parameter
---target-dir which specifies the table specific directory under which all the files
-with table data be created.
+--target-dir which specifies the table specific directory under which all the
+  files with table data be created.
 
-==> Every import will create boundary query to identify number of buckets to divide data into equally on primary key column.
-==> If you manually want to  provide different boundary query use parameter --BOUNDARY-QUERY
-==> If you dont want all the columns from the table, use --COLUMN parameter with column list seperated by comma and no spaces.
-==> --TABLE and --QUERY are mutually exclusive, both can not be used in same SQOOP command
+==> Every import will create boundary query to identify number of buckets to
+    divide data into equally on primary key column.
+==> If you manually want to  provide different boundary query use parameter
+    --BOUNDARY-QUERY
+==> If you dont want all the columns from the table, use --COLUMN parameter with
+    column list seperated by comma and no spaces.
+==> --TABLE and --QUERY are mutually exclusive, both can not be used in same
+    SQOOP command
 
-==> If MYSQL table doesn't have a primary key, sqoop will not work as it will not be able to compute boundary query.
-==> Solution either user --SPLIT-BY or use only 1 mapper. Column needs to be indexed on which splitting is to be performed.
+==> If MYSQL table doesn't have a primary key, sqoop will not work as it will
+    not be able to compute boundary query.
+==> Solution either user --SPLIT-BY or use only 1 mapper. Column needs to be
+    indexed on which splitting is to be performed.
 ==> --SPLIT-BY is mandatory when doing SQOOP IMPORT using --QUERY
 
 sqoop import \
@@ -112,12 +120,19 @@ sqoop import \
 --split-by order_id \
 --num-mappers 4
 
-#Sqoop performs highly efficient data transfers by inheriting Hadoop’s parallelism. To help Sqoop split your query into multiple chunks that can be transferred in parallel, you need to include the $CONDITIONS placeholder in the where clause of your query. Sqoop will automatically substitute this placeholder with the generated conditions specifying which slice of data should be transferred by each individual task. While you could skip $CONDITIONS by forcing Sqoop to run only one job using the --num-mappers 1 parameter, such a limitation would have a severe performance impact.
+#Sqoop performs highly efficient data transfers by inheriting Hadoop’s
+ parallelism. To help Sqoop split your query into multiple chunks that can be
+ transferred in parallel, you need to include the $CONDITIONS placeholder in the
+ where clause of your query. Sqoop will automatically substitute this placeholder
+ with the generated conditions specifying which slice of data should be
+ transferred by each individual task. While you could skip $CONDITIONS by forcing
+ Sqoop to run only one job using the --num-mappers 1 parameter, such a limitation
+ would have a severe performance impact.
 
 #IMPORTING single table into HIVE
 
-#While importing in hive, destination table can either be created on the fly or table can be created in hive and then data is
-imported using sqoop.
+#While importing in hive, destination table can either be created on the fly or t
+ able can be created in hive and then data is imported using sqoop.
 
 1) Create table first
 
@@ -133,8 +148,9 @@ sqoop import \
 --hive-overwrite \
 --hive_table sqoop_import.departments_hive
 
-#When importing table in hive data is first staged in user home, so if a dir with same name exists in user home, process might
-fail. Once the processing if done and import is complete, staging dir is deleted.
+#When importing table in hive data is first staged in user home, so if a dir
+with same name exists in user home, process might fail. Once the processing if
+done and import is complete, staging dir is deleted.
 
 2) Create table on the fly
 
@@ -147,4 +163,3 @@ sqoop import \
 --hive-overwrite \
 --create-hive-table \
 --hive-database sqoop_import
-
