@@ -1,0 +1,90 @@
+Apache SPARK
+============
+
+To use hive context in spark, there needs to be a soft link created as follows:
+
+sudo ln -s /etc/hive/conf/hive-site.xml /etc/spark/conf/
+
+Try following command to confirm:
+SCALA
+sqlContext.sql("select * from departments").collect().foreach(println)
+
+PYTHON
+print(sqlContext.sql("select * from departments").collect())
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+#Importing Hive Context and running a query on prompt
+#To query and retrieve data from HIVE table
+
+from pyspark import HiveContext
+sqlContext=HiveContext(sc)
+depts = sqlContext.sql("select * from departments")
+
+for rec in depts.collect():
+  print rec
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+#To query and retrieve data from remote database
+#we need to have jdbc url and connectivity to remote
+#database using jdbc connecter
+
+#To find JDBC connecter for mysql, run
+
+$> sudo find / -name "mysql-connecter*.jar"
+
+You can actually run using following command or setting up environment variable
+
+pyspark --driver-class-path /usr/share/java/mysql-connector-java.jar
+
+OR
+
+os.environ['SPARK_CLASSPATH'] = "/usr/share/java/mysql-connector-java.jar"
+This registers JAR file to the session
+
+Once done, we can query and transform data from remote database
+
+from pyspark import SQLContext
+sqlContext=SQLContext(sc)
+
+jdbcurl = "jdbc:mysql"//quickstart.cloudera:3306/retail_db?user=retail_dba&password=cloudera"
+df = sqlContext.load(source="jdbc", url=jdbcurl, dbtable="departments")
+
+for rec in df.collect():
+  print rec
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+To submit a script as spark job, create a file "spark_submit_example.py"
+
+from pyspark import SparkContext, SparkConf
+
+conf = SparkConf().setAppName("pyspark")
+sc = SparkContext(conf=conf)
+
+deptRDD = sc.textFile("/user/cloudera/sqoop_import/departments")
+
+for rec in deptRDD.collect():
+	print rec
+
+deptRDD.saveAsTextFile("/user/cloudera/pyspark/departmentsTesting")
+
+$> spark-submit spark_submit_example.py
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+from pyspark import SQLContext, SparkConf, SparkContext
+
+conf=SparkConf().setAppName("json")
+sc=SparkContext(conf=conf)
+sqlContext=SQLContext(sc)
+
+DJsonRDD=sqlContext.jsonFile('file:///home/cloudera/demo/data/departments.json')
+DJsonRDD.registerTempTable("djson")
+deptRDD=sqlContext.sql("select * from djson")
+
+for i in deptRDD.collect():
+  print i
+
+deptRDD.toJSON().saveAsTextFile('/user/cloudera/pyspark/djson')
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++
