@@ -1,0 +1,81 @@
+AGGGREGATION BY KEY
+===================
+
+- To find number of orders per status
+- key will be order_status
+
+
+ordersRDD=sc.textFile('/user/cloudera/sqoop_import/orders')
+
+ordersMap=ordersRDD.map(lambda x : (x.split(",")[3],1))
+
+
+## COUNT BY KEY ##
+##################
+#In creating this tuple we used value "1", this can be any value as
+#countByKey will be done on K in (k,v)
+
+ordersMap.countByKey() #This is an action
+
+# Following will only print KEY
+
+for i in ordersMap.countByKey():
+	print i
+
+# Following will print Key and values
+
+for i in ordersMap.countByKey().items():
+	print i	
+
+## GROUP BY KEY ##
+##################
+#groupByKey will not apply combine operation (will be slower)
+#compared to reduceByKey, aggregateByKey or combineByKey
+
+orderByStatusGBYK=ordersMap.groupByKey.map(lambda x : (x[0],sum(x[1])))
+
+#groupByKey will procude same result as countByKey above
+#here second value of tuple created in ordersMap can not be ZERO
+#As groupbyKey uses v in (k,v) to count
+
+## REDUCE BY KEY ##
+###################
+
+orderByStatusRBYK=ordersMap.reduceByKey(lambda acc, val : acc + val)
+
+#it takes 2 parameters as accumulator and value
+#It will run combiner on map site, thus reducing network communication
+
+## AGGREGATE BY KEY ##
+######################
+
+aggregateByKey(initialize_value_acc,combiner_functionality,reducer_functionality)
+
+# In case of reduceByKey, combiner and reducer functionalities are same
+# thats why there is 1 parameter
+
+ordersMap=ordersRDD.map(lambda rec : (rec.split(",")[3],rec))
+
+orderByStatusABYK=ordersMap.aggregateByKey(0,
+										   lambda acc, val : acc + 1,
+										   lambda acc, val : acc + val)
+
+# wherein, in combiner we are just adding 1 to accumulator for each key
+# not using val atall which is rec from ordersMap RDD
+# acc in combiner will be passed as val to reducer
+
+NOTE : Incase of difference in type of Input and Output values for aggregation
+have to use agrregateByKey or combineByKey. Can not use reduceByKey.
+
+## COMBINE BY KEY ##
+####################
+
+# Difference between aggregateByKey and combineByKey is first parameter
+# In aggregateByKey - first parameter is accumulator initialization value
+# In combineByKey - first parameter can use any value from rec to initialize
+
+orderByStatusCBYK = ordersMap.combineByKey(lambda val : 1,
+										   lambda acc, val : acc + 1,
+										   lambda acc, val : acc + val)
+
+# wherein val in first parameter is nothing but rec from ordersMap										   
