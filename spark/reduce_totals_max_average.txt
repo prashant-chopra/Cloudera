@@ -1,0 +1,54 @@
+SPARK AGGREGATION
+=================
+
+REDUCE - This computes totals or sum on entire set.
+
+For aggregations based on a key, use
+groupByKey
+reduceByKey
+aggregateByKey
+
+groupByKey and reduceByKey will fetch similar result set. reduceByKey uses
+combiner internally, however groupByKey does not. This means that we need
+to understand which to use when. For eg: If we have 1 million records and
+we are getting nearly 10% of of data set after aggregation, reduceByKey would
+be better as this will reduce network traffic.
+
+aggregateByKey also works same as reduceByKey, but if you want to provide
+custom logic for the combiner, which is different from final logic to get the
+final result, you can use aggregateByKey.
+
+REDUCE
+------
+-Sum of all revenue from order_items table
+
+orderitemsRDD=sc.textFile('/user/cloudera/sqoop_import/order_items')
+orderItems=orderitemsRDD.map(lambda x : float(x.split(",")[4]))
+orderItems.reduce(lambda v1, v2 : v1+v2)
+
+-Maximum price of products
+productsRDD=sc.textFile('/user/cloudera/sqoop_import/products')
+productsMap=productsRDD.map(lambda rec: float(rec.split(",")[4]))
+productsMap.reduce(lambda v1, v2 : v1 if (v1 >= v2) else v2)
+
+This might fail for products table has product_id = 685, where product_name
+has a "," in the value thus values are getting offset. Remove this record from
+HDFS file by getting file to localFS, remove record and put back to HDFS location
+
+Run again
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Average
+-Use order_items table
+-calculate average revenue per order
+-generate sum of order revenue and count of distinct orders
+-generate average using 2 values computed above
+
+totalrevenue=orderitemsRDD.map(lambda x : float(x.split(",")[4])) \
+                          .reduce(lambda v1,v2 : v1+v2)
+
+totalorders=orderitemsRDD.map(lambda x : int(x.split(",")[1])) \
+                         .distinct().count()
+
+totalrevenue/totalorders
