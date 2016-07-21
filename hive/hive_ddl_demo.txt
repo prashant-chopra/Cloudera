@@ -12,6 +12,50 @@ HIVE TUTORIAL
      RANGE- Not available with hive
 5) Limited data types (numeric, string, binary etc.)
 
+# Data types in HIVE
+--------------------
+1) Primitive data types
+    - Numeric
+        :: TINYINT
+        :: SMALLINT
+        :: INT
+        :: BIGINT
+        :: FLOAT
+        :: DOUBLE
+        :: DECIMAL
+
+    - String
+        :: STRING
+        :: VARCHAR
+        :: CHAR
+
+    - Date/Time
+        :: DATE
+        :: TIMESTAMP
+
+    - Miscellaneous
+        :: BOOLEAN
+        :: BINARY
+
+2) Complex data types (COLLECTION DATA TYPES)
+    - Struct (record type)
+    - Map (key-value pair)
+    - Array (ordered sequence)
+
+    CREATE TABLE person (
+        id INT,
+        phones ARRAY<INT>,
+        otherDetails MAP<STRING, STRING>,
+        address STRUCT<street:STRING, city:STRING, state:STRING>
+    );
+
+NOTE : When converting string to varchar, if string is bigger than the length
+       of varchar specified, it silently gets truncated
+
+       VARCHAR and CHAR can not be used in UDFs and UDAFs
+
+       DATE types can be casted in DATE, TIMESTAMP or STRING and vice versa.
+
 HIVE DDL
 ========
 

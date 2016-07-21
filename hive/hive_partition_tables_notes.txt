@@ -1,0 +1,141 @@
+PARTITIONING
+============
+
+The partitioning of tables changes the structure of storing the data.
+A root-level directory structure remains the same as a normal table;
+for example, if we create this customer table in the xyz database,
+there will be a root-level directory, as shown here:
+
+hdfs://hadoop_namenode_server/user/hive/warehouse/xyz.db/customer
+
+CREATE TABLE customer
+(
+id STRING,
+name STRING,
+gender STRING
+)
+PARTITIONED BY (country STRING, state STRING);
+
+CUSTOMER table is partitioned by first Country and then state.
+
+NOTE
+We have not included the country and state columns in the schema of table as
+these columns are defined as the partition keys. If we try to include these
+columns in schema as well, then we will get the following error:
+FAILED: SemanticException [Error 10035]: Column repeated in partitioning columns
+
+Directory structure for above table will be like:
+.../customer/country=OI/state=AB
+.../customer/country=OI/state=DC
+.../customer/country=UK/state=JR
+...
+
+### PARTITION OPERATIONS ###
+############################
+
+**To view table partitions :
+
+$> SHOW PARTITIONS customer;
+
+$> SHOW PARTITIONS customer PARTITION(country='US');
+
+NOTE
+If the table is not a partitioned table,
+then the SHOW PARTITIONS command will throw the error FAILED:
+Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask.
+The table sales is not a partitioned table.
+
+**To add new partition
+
+$> alter table table_name add [IF NOT EXISTS]
+   partition partition_spec [location 'loc1']
+   partition partition_spec [location 'loc2']
+   ...;
+
+ALTER TABLE customer_external
+ADD PARTITION(country='UK')
+LOCATION '/user/hive/warehouse/customer/country=UK';
+
+
+**To rename a partition
+
+$> ALTER TABLE table_name PARTITION partition_spec
+   RENAME TO PARTITION partition_spec;
+
+**To exchange partitions
+
+$> ALTER TABLE table1 EXCHANGE PARTITION (ct='1') WITH TABLE table2;
+
+This command moves the data from table2 to table1@ct=1.
+If table@ct=1 is already exists or the schema of table1 and table2 is different,
+then this operation will be failed.
+
+**To drop partition
+
+$> ALTER TABLE table_name DROP [IF EXISTS]
+   PARTITION partition_spec[, PARTITION partition_spec, ...]
+   [IGNORE PROTECTION] [PURGE];
+
+The preceding statement deletes the actual data and metadata of the specified
+partition. If trash is configured, then data will be moved to the .Trash/Current
+directory. If the PURGE option is specified in the preceding command, then the
+partition data will not go to the .Trash/Current directory. This means that data
+cannot be retrieved in the event of a mistaken drop.
+
+#########################################
+### LOADING DATA IN PARTITIONED TABLE ###
+#########################################
+
+(A) STATIC PARTITIONING
+
+While creating static partitions, we specify for which value a partition is to
+be created:
+
+The LOAD command can be used to insert the data from a file to a Hive table in
+specified partitions. If there are more than one partition columns in table,
+then you will have to specify values for all partitioning columns.
+
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE]
+INTO TABLE tablename [PARTITION (partcolumn1=value1, partcolumn2=value2 ...)]
+
+The INSERT command can be used to insert the data from a query result of an
+other Hive table:
+
+INSERT OVERWRITE TABLE tablename1
+[PARTITION (partcolumn1=value1, partcolumn2=value2 ...)]
+select_statement1 FROM from_statement;
+
+INSERT INTO TABLE tablename1
+[PARTITION (partcolumn1=value1, partcolumn2=value2 ...)]
+select_statement1 FROM from_statement;
+
+(B) DYNAMIC PARTITIONING
+
+To insert the data, the dynamic partition columns must be specified in last
+among the columns in the SELECT statement and in the same order in which they
+appear in the PARTITION() clause.
+
+Dynamic partitioning is disabled by default. The minimal configuration to enable
+dynamic partitioning is as follows:
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+You can set this configuration at a session level using Hive shell or at the
+global level using the Hive configuration file hive-site.xml. After setting up
+these two properties, you can create dynamic partitions.
+
+The syntax is as follows:
+
+INSERT OVERWRITE TABLE tablename
+PARTITION (partcol1[=val1], partcol2[=val2] ...)
+select_statement FROM from_statement;
+
+INSERT INTO TABLE tablename
+PARTITION (partcol1[=val1], partcol2[=val2] ...)
+select_statement FROM from_statement;
+
+
+CREATE TABLE sales_bucketed (id INT, fname STRING, lname STRING, address STRING,
+city STRING,state STRING, zip STRING, IP STRING, prod_id STRING, date1 STRING) C
+LUSTERED BY (id) INTO 10 BUCKETS;
