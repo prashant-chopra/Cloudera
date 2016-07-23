@@ -1,0 +1,133 @@
+HIVE DML
+========
+
+## Loading files into tables
+
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename
+[PARTITION (partcol1=val1, partcol2=val2 ...)]
+
+Examples:
+
+LOAD DATA LOCAL INPATH '/tmp/sales.txt' INTO TABLE sales;
+LOAD DATA INPATH '/sales.txt' INTO TABLE sales;
+LOAD DATA INPATH ' /sales.txt' OVERWRITE INTO TABLE sales;
+
+================================================================================
+
+##Inserting data into Hive tables from queries
+
+A) Inserting into Single Table
+
+INSERT OVERWRITE TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)
+[IF NOT EXISTS]] select select_statement FROM from_statement;
+
+INSERT INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]
+select select_statement FROM from_statement;
+
+B) Inserting into Multiple Tables
+
+FROM from_statement
+INSERT OVERWRITE TABLE tablename1 [PARTITION (partcol1=val1, partcol2=val2 ...) [IF NOT EXISTS]] select select_statement1
+[INSERT OVERWRITE TABLE tablename2 [PARTITION ... [IF NOT EXISTS]] select select_statement2]
+[INSERT INTO TABLE tablename2 [PARTITION ...] select select_statement2] ...;
+
+FROM from_statement
+INSERT INTO TABLE tablename1 [PARTITION (partcol1=val1, partcol2=val2 ...)] select select_statement1
+[INSERT INTO TABLE tablename2 [PARTITION ...] select select_statement2]
+[INSERT OVERWRITE TABLE tablename2 [PARTITION ... [IF NOT EXISTS]] select select_statement2] ...;
+
+Examples :
+
+INSERT INTO sales SELECT * FROM sales_rgn;
+INSERT INTO sales SELECT * FROM sales_rgn WHERE state = 'Maryland';
+INSERT OVERWRITE TABLE sales SELECT * FROM sales_rgn;
+INSERT OVERWRITE TABLE sales SELECT * FROM sales_rgn WHERE id = 1;
+
+================================================================================
+
+##Inserting data into dynamic partitions
+
+FROM tablename
+INSERT OVERWRITE TABLE tablename1 PARTITION(root_partition_name='value',child_partition_name)
+SELECT select_statment;
+
+Example :
+
+FROM sales_region slr
+INSERT OVERWRITE TABLE sales PARTITION(dop='2015-10-20', city)
+SELECT slr.id, slr.firstname, slr.lastname, slr.city;
+
+================================================================================
+
+##Writing data into files from queries
+
+This part helps you insert data into a file with the help of a query; that is,
+the output of a query to be saved into a file.
+
+Standard syntax:
+INSERT OVERWRITE [LOCAL] DIRECTORY directory1 [ROW FORMAT row_format]
+[STORED AS file_format]SELECT select_statment FROM from_statment.
+
+Hive extension (multiple inserts):
+FROM from_statement
+INSERT OVERWRITE [LOCAL] DIRECTORY directory1 select_statement1
+[INSERT OVERWRITE [LOCAL] DIRECTORY directory2 select_statement2] ...
+
+Example :
+
+INSERT OVERWRITE LOCAL DIRECTORY '/sales'
+SELECT sle.id, sle.fname, sle.lname, sle.address
+FROM sales sle;
+
+================================================================================
+
+Insert, Update and Delete are not possible in Hive until the ACID properties are
+not enabled.
+
+##Inserting values into tables from SQL
+
+INSERT INTO sales VALUES (1, 'John', 'Terry', 'H-43 Sector-23', 'Delhi', 'India', '10.10.10.10', 'P_1', '15-11-1985');
+INSERT INTO sales VALUES (2, 'Terry', 'John', 'H-43 Sector-23', 'Delhi', 'India', '10.10.10.10', '', '');
+INSERT INTO sales VALUES (2, 'Terry', 'John', 'H-43 Sector-23', 'Delhi', 'India', '10.10.10.10');
+Create table employees (name string, age int, job string) clustered by (age) into 2 buckets stored as orc;
+Insert into employees values ('John', 30, 'IT'), ('Jerry', 35, 'Sales');
+Create table department (name string, age int, deptno int) Partitioned by (datestamp string);
+INSERT INTO department PARTITION (datestamp = '2015-10-23') VALUES ('Jason', 20, 10), ('Nelson', 30, 20);
+
+NOTE:
+In Hive, the value for each column must be provided in the INSERT clause,
+unlike traditional RDBMS where the user can specify values for specific columns.
+However, if the user does not wish to specify all the columns, he/she can
+specify NULL else an error is thrown as specified in the preceding example.
+
+Insertion is not possible on tables that are created using the SORTED BY clause.
+
+Hive does not support complex datatypes.
+
+Dynamic partitioning is supported in the same way as INSERT SELECT.
+
+================================================================================
+
+##Updating data
+
+UPDATE tablename SET column = value [, column = value ...] [WHERE expression]
+
+Examples :
+UPDATE sales SET lname = 'Thomas' WHERE id = 1;
+UPDATE sales SET ip = '20.20.20.20' WHERE id = 2;
+
+NOTE:
+Partitioning columns cannot be updated
+Bucketing columns cannot be updated
+Update is not possible on tables that are created using the SORTED BY clause
+
+================================================================================
+
+##Deleting data
+
+DELETE FROM tablename [WHERE expression]
+
+Example :
+DELETE FROM sales WHERE id = 1;
+
+Upon successful completion of this operation, the changes will be auto-committed.
