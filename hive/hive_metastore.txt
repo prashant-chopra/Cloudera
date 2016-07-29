@@ -24,6 +24,15 @@ When a table is created in HIVE:
 - Metadata of the table goes to METASTORE
 - Table data goes to HDFS
 
+TO view value of a hive parameter or to change its value use SET:
+- set mapreduce.job.reduce;
+- set mapreduce.job.reduce=2;
+This will set the value for current session only.
+
+To make this applicable for all the sessions
+$HOME> vi .hiverc
+and provide the value
+
 When a query is fired against a table in HIVE
 - Hive Binaries on gateway node will compile the query using Java APIs.
 - Once compiled it will create a JAR file. This jar will be submitted as
@@ -40,6 +49,23 @@ to process the underlying data.
 2) Spark, which will use its own spark binaries (and not hive binaries)
    to process data using HiveContext in Spark
 3) Impala, which can be used to directly query data in HDFS without MR job.
+
+### HIVE CLI ###
+################
+Hive can be launched in 3 possible ways:
+1) hive (launches command line)
+2) hive -e (executed individual command w/o launching CLI)
+3) hive -f (to ececute a file containing series of hive commands)
+
+### HIVE LOGS ###
+#################
+
+By default hive creates log file at $HOME/tmp/${user}
+
+This can be overridden using (-hiveconf or set)
+- hive.log.dir
+- hive.log.file
+- hive.querylog.location
 
 #To invoke IMPALA shell use
 
