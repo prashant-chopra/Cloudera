@@ -1,0 +1,37 @@
+DATA FORMATS
+============
+
+#### TEXT FILE
+- Basic file type, which can be read virtually from any language.
+- Human readable so easy for debugging
+- Representing numeric values as string wastes space
+
+VERDICT : Good interoperability, Poor performance
+
+#### SEQUENCE FILE
+- Stores key value pairs in binary format
+- Capable of storing binary data
+- Format is java specific and is tightly coupled with Hadoop
+
+VERDICT : Good performance, Poor interoperability
+
+#### AVRO FILE
+- Efficient due to optimized binary encoding
+- Can read write from many languages
+- Embeds schema in the file, so will always be readable
+- Schema evolution can accommodate changes
+- Best choice for general purpose storage in Hadoop
+
+VERDICT : Excellent interoperability and performance.
+
+#### PARQUET FILE
+- Schema is embedded in file
+- Reduces storage space
+- Increases performance
+
+VERDICT : Excellent interoperability and performance.
+
+NOTE :
+-BOTH AVRO AND PARQUET serializes data using highly optimized binary encoding.
+-AVRO supports Remote Procedure Calls (RPC)
+-Flume uses AVRO for internal communication
